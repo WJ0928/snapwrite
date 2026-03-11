@@ -1,5 +1,7 @@
 // Real API integration with simulated streaming for UI effect
 import { getSystemPrompt } from './systemprompt';
+import { checkPrompt } from './checkPrompt';
+
 export async function* optimizeContentStream(text, customConfig = null, style = 'magazine', customStylePrompt = '') {
     // If custom config exists (Dark Mode), use it directly
     if (customConfig && customConfig.apiUrl && customConfig.apiKey) {
@@ -162,5 +164,64 @@ export async function* optimizeContentStream(text, customConfig = null, style = 
     } catch (error) {
         console.error("API Request Failed:", error);
         yield `<div style="color: red; padding: 20px;"><strong>Error:</strong> Failed to connect to optimization service.<br><small>${error.message}</small></div>`;
+    }
+}
+
+export async function* checkArticleStream(text, customConfig) {
+    if (customConfig && customConfig.apiUrl && customConfig.apiKey) {
+        try {
+            const response = await fetch(customConfig.apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${customConfig.apiKey}`
+                },
+                body: JSON.stringify({
+                    model: customConfig.model,
+                    messages: [
+                        { role: "system", content: checkPrompt },
+                        { role: "user", content: `文章内容:\n${text}` }
+                    ],
+                    stream: true
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Check API Error: ${response.status} - ${errorText}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\\n');
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const dataStr = line.slice(6);
+                        if (dataStr === '[DONE]') continue;
+
+                        try {
+                            const data = JSON.parse(dataStr);
+                            const content = data.choices[0]?.delta?.content || '';
+                            if (content) yield content;
+                        } catch (e) {
+                            // Ignored or handled
+                        }
+                    }
+                }
+            }
+
+        } catch (error) {
+            console.error("Check API Request Failed:", error);
+            yield `检测失败：${error.message}`;
+        }
+    } else {
+        yield "请先配置自定义 LLM（点击右上角设置图标），再进行发布前检查。";
     }
 }

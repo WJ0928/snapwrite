@@ -6,7 +6,7 @@ import VersionTabs from '../preview/VersionTabs';
 import PhoneModel from '../preview/PhoneModel';
 
 export default function PreviewPanel() {
-  const { currentVersion, isGenerating, updateVersion, setLayoutMode } = useDraft();
+  const { currentVersion, isGenerating, setLayoutMode } = useDraft();
 
   // Copy rich text (HTML) function
   const handleCopy = () => {

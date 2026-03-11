@@ -1,11 +1,14 @@
-import { Github, Settings, Layout } from 'lucide-react';
+import { Github, Settings, Layout, ShieldCheck } from 'lucide-react';
 import EditorSplitView from '../components/editor/EditorSplitView';
 import PullCord from '../components/common/PullCord';
 import ConfigModal from '../components/settings/ConfigModal';
+import CheckModal from '../components/editor/CheckModal';
 import { useDraft } from '../context/DraftContext';
+import { useState } from 'react';
 
 export default function EditorPage() {
     const { isDarkMode, setIsConfigModalOpen, conversionStyle, setConversionStyle } = useDraft();
+    const [isCheckModalOpen, setIsCheckModalOpen] = useState(false);
     return (
         <div style={{
             height: '100vh',
@@ -107,6 +110,30 @@ export default function EditorPage() {
                             <Settings size={20} />
                         </button>
                     )}
+                    {isDarkMode && (
+                        <button
+                            onClick={() => setIsCheckModalOpen(true)}
+                            title="发布前检测"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                background: 'transparent',
+                                border: '1px solid var(--border)',
+                                borderRadius: '16px',
+                                padding: '4px 12px',
+                                color: 'var(--text-main)',
+                                fontSize: '0.85rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.background = 'var(--bg-panel)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+                        >
+                            <ShieldCheck size={16} color="var(--primary)" />
+                            <span>发布前检测</span>
+                        </button>
+                    )}
                     <a
                         href="https://github.com/WtecHtec/snapwrite"
                         target="_blank"
@@ -130,6 +157,7 @@ export default function EditorPage() {
             <div style={{ flex: 1, overflow: 'hidden' }}>
                 <EditorSplitView />
             </div>
+            <CheckModal isOpen={isCheckModalOpen} onClose={() => setIsCheckModalOpen(false)} />
         </div>
     );
 }
