@@ -119,17 +119,33 @@ export function DraftProvider({ children }) {
                 setVersions(prev => prev.map(v => v.id === newId ? finalVersion : v));
                 setActiveVersionId(newId);
 
-                // Increment usage count and check for donation
+                // Increment usage count and check for donation (daily reset & cumulative trigger 5,15,30,50...)
                 try {
-                    const currentCount = parseInt(localStorage.getItem('snapwrite_usage_count') || '0', 10);
-                    const newCount = currentCount + 1;
-                    localStorage.setItem('snapwrite_usage_count', newCount.toString());
+                    const today = new Date().toDateString();
+                    let stats = { date: today, count: 0 };
+                    const savedStats = localStorage.getItem('snapwrite_usage_stats');
+                    if (savedStats) {
+                        const parsed = JSON.parse(savedStats);
+                        if (parsed.date === today) {
+                            stats.count = parsed.count;
+                        }
+                    }
 
-                    if (newCount > 0 && newCount % 10 === 0) {
-                        setIsDonationModalOpen(true);
+                    stats.count += 1;
+                    localStorage.setItem('snapwrite_usage_stats', JSON.stringify(stats));
+                    // Cleanup old key if any
+                    localStorage.removeItem('snapwrite_usage_count');
+
+                    // Formula: Trigger at T_n = 5 * n * (n + 1) / 2  =>  2 * T_n / 5 = n * (n + 1)
+                    if (stats.count > 0 && (stats.count * 2) % 5 === 0) {
+                        const x = (stats.count * 2) / 5;
+                        const n = Math.floor(Math.sqrt(x));
+                        if (n * (n + 1) === x) {
+                            setIsDonationModalOpen(true);
+                        }
                     }
                 } catch (e) {
-                    console.error('Failed to update usage count', e);
+                    console.error('Failed to update usage stats', e);
                 }
             }
 
