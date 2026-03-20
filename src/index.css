@@ -25,6 +25,13 @@
   --spacing-lg: 24px;
   --spacing-xl: 32px;
 
+  /* Gradients & Glows (Light) */
+  --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+  --glow-primary: rgba(99, 102, 241, 0.15);
+  --glow-secondary: rgba(236, 72, 153, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.4);
+
   /* Radius */
   --radius-sm: 6px;
   --radius-md: 8px;
@@ -35,6 +42,8 @@
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -60,6 +69,12 @@ body.dark {
   --primary: #818cf8;
   --primary-hover: #6366f1;
   --secondary: #f472b6;
+  
+  --bg-gradient: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+  --glow-primary: rgba(99, 102, 241, 0.2);
+  --glow-secondary: rgba(236, 72, 153, 0.15);
+  --glass-bg: rgba(15, 23, 42, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
 }
 
 *,
@@ -132,5 +147,11 @@ a:hover {
 
   50% {
     opacity: 1;
+  }
+}
+
+@media (min-width: 640px) {
+  .sm-show {
+    display: inline !important;
   }
 }
