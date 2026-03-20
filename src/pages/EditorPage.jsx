@@ -3,11 +3,12 @@ import EditorSplitView from '../components/editor/EditorSplitView';
 import PullCord from '../components/common/PullCord';
 import ConfigModal from '../components/settings/ConfigModal';
 import CheckModal from '../components/editor/CheckModal';
+import DonationModal from '../components/editor/DonationModal';
 import { useDraft } from '../context/DraftContext';
 import { useState } from 'react';
 
 export default function EditorPage() {
-    const { isDarkMode, setIsConfigModalOpen, conversionStyle, setConversionStyle } = useDraft();
+    const { isDarkMode, setIsConfigModalOpen, conversionStyle, setConversionStyle, isDonationModalOpen, setIsDonationModalOpen } = useDraft();
     const [isCheckModalOpen, setIsCheckModalOpen] = useState(false);
     return (
         <div style={{
@@ -158,6 +159,7 @@ export default function EditorPage() {
                 <EditorSplitView />
             </div>
             <CheckModal isOpen={isCheckModalOpen} onClose={() => setIsCheckModalOpen(false)} />
+            <DonationModal isOpen={isDonationModalOpen} onClose={() => setIsDonationModalOpen(false)} />
         </div>
     );
 }

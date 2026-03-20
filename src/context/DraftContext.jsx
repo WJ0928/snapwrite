@@ -33,6 +33,7 @@ export function DraftProvider({ children }) {
     }, [customStylePrompt]);
 
     const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+    const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
 
     // Toggle Theme
     const toggleTheme = useCallback(() => {
@@ -112,6 +113,19 @@ export function DraftProvider({ children }) {
                 const finalVersion = { ...startingVersion, content: accumulatedContent };
                 setVersions(prev => [...prev, finalVersion]);
                 setActiveVersionId(newId);
+
+                // Increment usage count and check for donation
+                try {
+                    const currentCount = parseInt(localStorage.getItem('snapwrite_usage_count') || '0', 10);
+                    const newCount = currentCount + 1;
+                    localStorage.setItem('snapwrite_usage_count', newCount.toString());
+
+                    if (newCount > 0 && newCount % 10 === 0) {
+                        setIsDonationModalOpen(true);
+                    }
+                } catch (e) {
+                    console.error('Failed to update usage count', e);
+                }
             }
 
         } catch (error) {
@@ -150,6 +164,8 @@ export function DraftProvider({ children }) {
         setCustomConfig,
         isConfigModalOpen,
         setIsConfigModalOpen,
+        isDonationModalOpen,
+        setIsDonationModalOpen,
         conversionStyle,
         setConversionStyle,
         customStylePrompt,
