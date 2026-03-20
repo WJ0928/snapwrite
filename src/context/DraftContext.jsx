@@ -89,6 +89,10 @@ export function DraftProvider({ children }) {
             timestamp: new Date(),
             name: `Version ${versions.length + 1}`
         };
+
+        // 生成的一瞬间立刻在状态中产生一个版本记录（空内容），作为缓存占位
+        setVersions(prev => [...prev, startingVersion]);
+        setActiveVersionId(newId);
         setTempVersion(startingVersion);
 
         try {
@@ -108,10 +112,11 @@ export function DraftProvider({ children }) {
                 setTempVersion(prev => ({ ...prev, content: accumulatedContent }));
             }
 
-            // Only commit if we have content
+            // Only commit complete content if not empty
             if (accumulatedContent.trim()) {
                 const finalVersion = { ...startingVersion, content: accumulatedContent };
-                setVersions(prev => [...prev, finalVersion]);
+                // 更新刚才生成的那个版本的实际内容
+                setVersions(prev => prev.map(v => v.id === newId ? finalVersion : v));
                 setActiveVersionId(newId);
 
                 // Increment usage count and check for donation
