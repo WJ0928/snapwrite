@@ -1,9 +1,14 @@
 import { useDraft } from '../../context/DraftContext';
 
 export default function VersionTabs() {
-    const { versions, activeVersionId, setActiveVersionId } = useDraft();
+    const { previewTab, versions, activeVersionId, setActiveVersionId, coverVersions, activeCoverVersionId, setActiveCoverVersionId } = useDraft();
 
-    if (versions.length === 0) return null;
+    const isCover = previewTab === 'cover';
+    const currentVersions = isCover ? coverVersions : versions;
+    const currentActiveId = isCover ? activeCoverVersionId : activeVersionId;
+    const setCurrentActiveId = isCover ? setActiveCoverVersionId : setActiveVersionId;
+
+    if (currentVersions.length === 0) return null;
 
     return (
         <div style={{
@@ -14,17 +19,18 @@ export default function VersionTabs() {
             background: 'var(--bg-panel)',
             overflowX: 'auto',
             whiteSpace: 'nowrap',
-            width: '100%' // Ensure full width
+            width: '100%', // Ensure full width
+            flexShrink: 0,
         }}>
-            {versions.map((version) => (
+            {currentVersions.map((version) => (
                 <button
                     key={version.id}
-                    onClick={() => setActiveVersionId(version.id)}
+                    onClick={() => setCurrentActiveId(version.id)}
                     style={{
-                        background: activeVersionId === version.id ? 'var(--bg-app)' : 'transparent',
-                        color: activeVersionId === version.id ? 'var(--primary)' : 'var(--text-secondary)',
+                        background: currentActiveId === version.id ? 'var(--bg-app)' : 'transparent',
+                        color: currentActiveId === version.id ? 'var(--primary)' : 'var(--text-secondary)',
                         border: 'none',
-                        borderBottom: activeVersionId === version.id ? '2px solid var(--primary)' : '2px solid transparent',
+                        borderBottom: currentActiveId === version.id ? '2px solid var(--primary)' : '2px solid transparent',
                         borderRadius: 0,
                         padding: '12px 16px',
                         fontSize: '0.9rem',

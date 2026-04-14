@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { optimizeContentStream } from '../api/apiService';
+import { optimizeContentStream, generateCoverStream } from '../api/apiService';
 
 const DraftContext = createContext();
 
@@ -10,6 +10,13 @@ export function DraftProvider({ children }) {
     const [originalText, setOriginalText] = useState('');
     const [layoutMode, setLayoutMode] = useState('default'); // 'default' | 'editing'
     const [tempVersion, setTempVersion] = useState(null); // Temporary state for streaming
+
+    // Cover specific states
+    const [previewTab, setPreviewTab] = useState('layout'); // 'layout' | 'cover'
+    const [activeCoverVersionId, setActiveCoverVersionId] = useState(null);
+    const [coverVersions, setCoverVersions] = useState([]);
+    const [isGeneratingCover, setIsGeneratingCover] = useState(false);
+    const [tempCoverVersion, setTempCoverVersion] = useState(null);
 
     const [isDarkMode, setIsDarkMode] = useState(() => {
         // Init from local storage or sys pref
@@ -164,8 +171,51 @@ export function DraftProvider({ children }) {
         ));
     }, []);
 
+    const generateCoverDraft = useCallback(async () => {
+        if (!originalText.trim()) return;
+
+        setIsGeneratingCover(true);
+        const newId = Date.now().toString();
+        const startingVersion = {
+            id: newId,
+            content: '',
+            timestamp: new Date(),
+            name: `Cover ${coverVersions.length + 1}`
+        };
+
+        setCoverVersions(prev => [...prev, startingVersion]);
+        setActiveCoverVersionId(newId);
+        setTempCoverVersion(startingVersion);
+
+        try {
+            let accumulatedContent = '';
+            for await (const chunk of generateCoverStream(originalText, customConfig)) {
+                accumulatedContent += chunk;
+                // We do NOT update tempCoverVersion here, to avoid rendering broken/partial HTML in the iframe.
+            }
+
+            if (accumulatedContent.trim()) {
+                const finalVersion = { ...startingVersion, content: accumulatedContent };
+                setCoverVersions(prev => prev.map(v => v.id === newId ? finalVersion : v));
+                setActiveCoverVersionId(newId);
+            }
+        } catch (error) {
+            console.error("Cover Generation failed", error);
+        } finally {
+            setTempCoverVersion(null);
+            setIsGeneratingCover(false);
+        }
+    }, [originalText, coverVersions.length, customConfig]);
+
+    const updateCoverVersion = useCallback((id, newContent) => {
+        setCoverVersions(prev => prev.map(v =>
+            v.id === id ? { ...v, content: newContent, name: `${v.name} (Edited)` } : v
+        ));
+    }, []);
+
     // If generating, show the temp version. Otherwise show the active selected version.
     const currentVersion = tempVersion || versions.find(v => v.id === activeVersionId);
+    const currentCoverVersion = tempCoverVersion || coverVersions.find(v => v.id === activeCoverVersionId);
 
     const value = {
         versions,
@@ -190,7 +240,17 @@ export function DraftProvider({ children }) {
         conversionStyle,
         setConversionStyle,
         customStylePrompt,
-        setCustomStylePrompt
+        setCustomStylePrompt,
+
+        previewTab,
+        setPreviewTab,
+        coverVersions,
+        activeCoverVersionId,
+        setActiveCoverVersionId,
+        currentCoverVersion,
+        isGeneratingCover,
+        generateCoverDraft,
+        updateCoverVersion
     };
 
     return (

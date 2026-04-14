@@ -2,7 +2,7 @@ import { useDraft } from '../../context/DraftContext';
 import { PenLine, Wand2 } from 'lucide-react';
 
 export default function InputPanel({ collapsed }) {
-    const { originalText, setOriginalText, generateDraft, isGenerating, setLayoutMode } = useDraft();
+    const { originalText, setOriginalText, generateDraft, isGenerating, setLayoutMode, previewTab, generateCoverDraft, isGeneratingCover } = useDraft();
 
     if (collapsed) {
         return (
@@ -46,9 +46,9 @@ export default function InputPanel({ collapsed }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-md)' }}>
                 <h3 style={{ margin: 0, color: 'var(--text-main)' }}>Original Content</h3>
                 <button
-                    onClick={generateDraft}
-                    disabled={isGenerating || !originalText.trim()}
-                    title="AI Optimize"
+                    onClick={previewTab === 'cover' ? generateCoverDraft : generateDraft}
+                    disabled={(previewTab === 'cover' ? isGeneratingCover : isGenerating) || !originalText.trim()}
+                    title={previewTab === 'cover' ? "AI Generate Cover" : "AI Optimize"}
                     style={{
                         padding: '8px',
                         width: '40px',
@@ -57,18 +57,18 @@ export default function InputPanel({ collapsed }) {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        opacity: (isGenerating || !originalText.trim()) ? 0.6 : 1,
-                        cursor: (isGenerating || !originalText.trim()) ? 'not-allowed' : 'pointer',
+                        opacity: ((previewTab === 'cover' ? isGeneratingCover : isGenerating) || !originalText.trim()) ? 0.6 : 1,
+                        cursor: ((previewTab === 'cover' ? isGeneratingCover : isGenerating) || !originalText.trim()) ? 'not-allowed' : 'pointer',
                         background: 'var(--primary)',
                         border: 'none',
                         color: 'white',
                         transition: 'transform 0.2s',
                         boxShadow: 'var(--shadow-md)'
                     }}
-                    onMouseOver={(e) => !isGenerating && (e.currentTarget.style.transform = 'scale(1.05)')}
+                    onMouseOver={(e) => !(previewTab === 'cover' ? isGeneratingCover : isGenerating) && (e.currentTarget.style.transform = 'scale(1.05)')}
                     onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
                 >
-                    {isGenerating ? (
+                    {(previewTab === 'cover' ? isGeneratingCover : isGenerating) ? (
                         <div className="spinner" style={{
                             width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 1s linear infinite'
                         }}></div>
